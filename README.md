@@ -30,12 +30,49 @@ The direct terminal launch is intentional: it keeps a stable Accessibility respo
 
 | Gesture | Action |
 | --- | --- |
-| Move the thumb tip | Move the cursor with strong smoothing |
-| Pinch thumb and index finger | Click |
-| Pinch twice quickly | Double-click / open |
-| Swipe an open palm left | Switch to the Space or full-screen window on the right |
-| Swipe an open palm right | Switch to the Space or full-screen window on the left |
-| Raise index and middle fingers | Scroll |
+| Fist with thumb and index free, move the thumb | Move the cursor — other hand shapes never touch it |
+| Pinch thumb and index finger | Press the mouse button: a quick pinch clicks, holding it while moving selects an area or drags |
+| Pinch twice quickly | Right-click |
+| Hold an open palm, inner side to the camera | Set the anchor the swipe is measured from — the back of the hand is ignored |
+| Flick from the anchor, left | Switch to the Space or full-screen window on the right |
+| Flick from the anchor, right | Switch to the Space or full-screen window on the left |
+| Raise index and middle fingers | Joystick scroll: where the fingers enter the pose is neutral, the offset above or below sets the speed |
+
+An open palm anchors the swipe — three raised fingers are enough when the whole palm
+does not fit the frame. The anchor sits on the middle knuckle, which stays confidently
+tracked even when the wrist is cropped, and tolerates camera jitter: holding the hand
+roughly still for a fifth of a second earns the origin. While the hand rests the anchor trails it on a leash, so drifting
+across the frame never accumulates into a gesture; a deliberate move outruns the leash,
+the origin freezes, and the swipe is measured from there. The move must cover the distance
+within ~0.6 s — anything slower is drift and quietly re-anchors. A hand also has to stay
+in frame for a quarter of a second before it may drive anything, misread frames in the
+middle of a flick are forgiven, and for a moment after an anchor frame the cursor,
+pinch, and scroll stay muted so a flick never jerks the pointer or clicks on its way
+through. With several hands in frame the app obeys exactly one owner: the largest hand — the
+nearest to the camera — takes control, and from then on ownership follows that hand by
+continuity. Other hands in the background are ignored entirely, and when the owner's
+hand is away no stranger inherits the controls.
+The armed anchor is also the ignition: until the palm has earned it once — and again
+after the hand has been out of frame for a couple of seconds — the cursor, pinch, and
+scroll stay off, so a hand merely passing through the frame touches nothing.
+Every threshold scales with the visible palm width, so gestures ask for the same
+physical motion at the desk and across the room, and the cursor is driven relatively —
+one palm width of hand travel moves it about a fifth of the screen at any distance,
+picking up from wherever the cursor already stands. While the anchor is armed,
+a soft glow along the screen edges shows that a flick will be honoured; when the glow
+fades, the hand has been lost and the palm needs to settle again.
+
+## Diagnostics
+
+Live diagnostics live under `/tmp`:
+
+- `airtouch-status.txt` — the current menu-bar status line;
+- `airtouch-joints.txt` — joint confidences of the last seen hand;
+- `airtouch-pose.txt` — how the engine reads the hand right now (finger flags, pose, anchor);
+- `airtouch-events.log` — appended, timestamped journal of the session: hand found and
+  lost, poses, anchor armed and lost, swipe departures with the reason a move was
+  honoured or rejected, pinches, Space switches, and blocked system events. The previous
+  session is kept as `airtouch-events.prev.log`.
 
 ## Commands
 
