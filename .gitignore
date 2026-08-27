@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.build/
+.DS_Store
+*.log
+
+# Legacy browser prototype (kept locally, not part of the native repository)
+/design/
+/src/
+/tests/
+/index.html
+/package.json
+/package-lock.json
+/vite.config.js
+/native/AirTouchBridge.swift
